@@ -27,9 +27,6 @@
     <ClCompile Include="proc.cpp">
       <Filter>Process</Filter>
     </ClCompile>
-    <ClCompile Include="mem.cpp">
-      <Filter>Memory</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MyForm.h">

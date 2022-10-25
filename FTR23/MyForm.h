@@ -211,15 +211,22 @@ namespace FTR23 {
 		}
 #pragma endregion
 
+	private: DWORD GetControllerOffset(DWORD controllerId)
+	{
+		//mov rax, [rdi+rcx*8+00000118]
+		//rcx == controllerId
+		return (DWORD)(controllerId * 0x8 + 0x118);
+	}
+
 	private: void UpdateAddress()
 	{
-		controller1Addr = FindMultiOffset(hProc, moduleBase, { 0x1E0, 0x118, 0x40 });
-		controller2Addr = FindMultiOffset(hProc, moduleBase, { 0x1E0, 0x120, 0x40 });
-		controller3Addr = FindMultiOffset(hProc, moduleBase, { 0x1E0, 0x128, 0x40 });
-		controller4Addr = FindMultiOffset(hProc, moduleBase, { 0x1E0, 0x130, 0x40 });
-		keyboardAddr = FindMultiOffset(hProc, moduleBase, { 0x1E0, 0x138, 0x40 });
-		cpu1Addr = FindMultiOffset(hProc, moduleBase, { 0x1E0, 0x1C8, 0x40 });
-		cpu2Addr = FindMultiOffset(hProc, moduleBase, { 0x1E0, 0x1D0, 0x40 });
+		controller1Addr = FindMultiOffset(hProc, moduleBase, { 0x30, GetControllerOffset(0x0), 0x40 });
+		controller2Addr = FindMultiOffset(hProc, moduleBase, { 0x30, GetControllerOffset(0x1), 0x40 });
+		controller3Addr = FindMultiOffset(hProc, moduleBase, { 0x30, GetControllerOffset(0x2), 0x40 });
+		controller4Addr = FindMultiOffset(hProc, moduleBase, { 0x30, GetControllerOffset(0x3), 0x40 });
+		keyboardAddr = FindMultiOffset(hProc, moduleBase, { 0x30, GetControllerOffset(0x4), 0x40 });
+		cpu1Addr = FindMultiOffset(hProc, moduleBase, { 0x30, GetControllerOffset(0x16), 0x40 });
+		cpu2Addr = FindMultiOffset(hProc, moduleBase, { 0x30, GetControllerOffset(0x17), 0x40 });
 	}
 
 	private: int GetCurrentController()
@@ -238,29 +245,29 @@ namespace FTR23 {
 		if (pid == 0) groupBox1->Enabled = false;
 		else
 		{
-			moduleBase = GetModuleBaseAddress(pid, L"FIFA23.exe") + 0xAB56B00;
+			moduleBase = GetModuleBaseAddress(pid, L"FIFA23.exe") + 0xAE52EC0;
 			hProc = OpenProcess(PROCESS_ALL_ACCESS, NULL, pid);
 
 			UpdateAddress();
 			switch (GetCurrentController())
 			{
 			case 0:
-				WriteProcessMemory(hProc, (BYTE*)controller1Addr, &c1, sizeof(c1), nullptr);
+				WriteProcessMemory(hProc, (BYTE*)controller1Addr, &center, sizeof(center), nullptr);
 				break;
 			case 1:
-				WriteProcessMemory(hProc, (BYTE*)controller2Addr, &c2, sizeof(c2), nullptr);
+				WriteProcessMemory(hProc, (BYTE*)controller2Addr, &center, sizeof(center), nullptr);
 				break;
 			case 2:
-				WriteProcessMemory(hProc, (BYTE*)controller3Addr, &c3, sizeof(c3), nullptr);
+				WriteProcessMemory(hProc, (BYTE*)controller3Addr, &center, sizeof(center), nullptr);
 				break;
 			case 3:
-				WriteProcessMemory(hProc, (BYTE*)controller4Addr, &c4, sizeof(c4), nullptr);
+				WriteProcessMemory(hProc, (BYTE*)controller4Addr, &center, sizeof(center), nullptr);
 				break;
 			case 4:
-				WriteProcessMemory(hProc, (BYTE*)keyboardAddr, &kb, sizeof(kb), nullptr);
+				WriteProcessMemory(hProc, (BYTE*)keyboardAddr, &center, sizeof(center), nullptr);
 				break;
 			}
-
+			
 			WriteProcessMemory(hProc, (BYTE*)cpu1Addr, &home, sizeof(home), nullptr);
 			WriteProcessMemory(hProc, (BYTE*)cpu2Addr, &away, sizeof(away), nullptr);
 			groupBox1->Enabled = true;
