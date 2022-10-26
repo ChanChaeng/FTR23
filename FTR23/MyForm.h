@@ -52,6 +52,10 @@ namespace FTR23 {
 	private: System::Windows::Forms::LinkLabel^ PatreonLink;
 	private: System::Windows::Forms::LinkLabel^ DiscordLink;
 	private: System::Windows::Forms::Timer^ SetupUpdate;
+
+
+
+
 	private: System::ComponentModel::IContainer^ components;
 
 
@@ -186,6 +190,7 @@ namespace FTR23 {
 			// SetupUpdate
 			// 
 			this->SetupUpdate->Enabled = true;
+			this->SetupUpdate->Interval = 1000;
 			this->SetupUpdate->Tick += gcnew System::EventHandler(this, &MyForm::SetupUpdate_Tick);
 			// 
 			// MyForm
@@ -220,13 +225,13 @@ namespace FTR23 {
 
 	private: void UpdateAddress()
 	{
-		controller1Addr = FindMultiOffset(hProc, moduleBase, { 0x30, GetControllerOffset(0x0), 0x40 });
-		controller2Addr = FindMultiOffset(hProc, moduleBase, { 0x30, GetControllerOffset(0x1), 0x40 });
-		controller3Addr = FindMultiOffset(hProc, moduleBase, { 0x30, GetControllerOffset(0x2), 0x40 });
-		controller4Addr = FindMultiOffset(hProc, moduleBase, { 0x30, GetControllerOffset(0x3), 0x40 });
-		keyboardAddr = FindMultiOffset(hProc, moduleBase, { 0x30, GetControllerOffset(0x4), 0x40 });
-		cpu1Addr = FindMultiOffset(hProc, moduleBase, { 0x30, GetControllerOffset(0x16), 0x40 });
-		cpu2Addr = FindMultiOffset(hProc, moduleBase, { 0x30, GetControllerOffset(0x17), 0x40 });
+		controller1Addr = FindMultiOffset(hProc, moduleBase, { 0x140, 0x40, GetControllerOffset(0x0), 0x40 });
+		controller2Addr = FindMultiOffset(hProc, moduleBase, { 0x140, 0x40, GetControllerOffset(0x1), 0x40 });
+		controller3Addr = FindMultiOffset(hProc, moduleBase, { 0x140, 0x40, GetControllerOffset(0x2), 0x40 });
+		controller4Addr = FindMultiOffset(hProc, moduleBase, { 0x140, 0x40, GetControllerOffset(0x3), 0x40 });
+		keyboardAddr = FindMultiOffset(hProc, moduleBase, { 0x140, 0x40, GetControllerOffset(0x4), 0x40 });
+		cpu1Addr = FindMultiOffset(hProc, moduleBase, { 0x140, 0x40, GetControllerOffset(0x16), 0x40 });
+		cpu2Addr = FindMultiOffset(hProc, moduleBase, { 0x140, 0x40, GetControllerOffset(0x17), 0x40 });
 	}
 
 	private: int GetCurrentController()
@@ -245,31 +250,40 @@ namespace FTR23 {
 		if (pid == 0) groupBox1->Enabled = false;
 		else
 		{
-			moduleBase = GetModuleBaseAddress(pid, L"FIFA23.exe") + 0xAE52EC0;
+			moduleBase = GetModuleBaseAddress(pid, L"FIFA23.exe") + 0xA130148;
 			hProc = OpenProcess(PROCESS_ALL_ACCESS, NULL, pid);
 
 			UpdateAddress();
 			switch (GetCurrentController())
 			{
 			case 0:
+				if(controller1Addr)
 				WriteProcessMemory(hProc, (BYTE*)controller1Addr, &center, sizeof(center), nullptr);
 				break;
 			case 1:
+				if (controller2Addr)
 				WriteProcessMemory(hProc, (BYTE*)controller2Addr, &center, sizeof(center), nullptr);
 				break;
 			case 2:
+				if (controller3Addr)
 				WriteProcessMemory(hProc, (BYTE*)controller3Addr, &center, sizeof(center), nullptr);
 				break;
 			case 3:
+				if (controller4Addr)
 				WriteProcessMemory(hProc, (BYTE*)controller4Addr, &center, sizeof(center), nullptr);
 				break;
 			case 4:
+				if (keyboardAddr)
 				WriteProcessMemory(hProc, (BYTE*)keyboardAddr, &center, sizeof(center), nullptr);
 				break;
 			}
 			
-			WriteProcessMemory(hProc, (BYTE*)cpu1Addr, &home, sizeof(home), nullptr);
-			WriteProcessMemory(hProc, (BYTE*)cpu2Addr, &away, sizeof(away), nullptr);
+			if (cpu1Addr)
+				WriteProcessMemory(hProc, (BYTE*)cpu1Addr, &home, sizeof(home), nullptr);
+			
+			if (cpu2Addr)
+				WriteProcessMemory(hProc, (BYTE*)cpu2Addr, &away, sizeof(away), nullptr);
+			
 			groupBox1->Enabled = true;
 		}
 	}

@@ -54,8 +54,13 @@ uintptr_t FindMultiOffset(HANDLE hProc, uintptr_t ptr, std::vector<DWORD> offset
 	uintptr_t addr = ptr;
 	for (size_t i = 0; i < offsets.size(); i++)
 	{
-		ReadProcessMemory(hProc, (BYTE*)addr, &addr, sizeof(addr), 0);
-		addr += offsets[i];
+		MEMORY_BASIC_INFORMATION mbi;
+		if (!VirtualQueryEx(hProc, (LPCVOID)addr, &mbi, sizeof(mbi))) return 0;
+		if (mbi.State != MEM_COMMIT || mbi.Protect == PAGE_NOACCESS) return 0;
+
+		if (ReadProcessMemory(hProc, (BYTE*)addr, &addr, sizeof(addr), 0))
+			addr += offsets[i];
+		else return 0;
 	}
 	return addr;
 }
